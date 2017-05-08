@@ -51,7 +51,7 @@ class ViewController: UIViewController {
                        selector: #selector(type(of: self).detectUserDidTakeScreenshot),
                        name: .UIApplicationUserDidTakeScreenshot,
                        object: nil)
-        
+
         /*
          closure版
          端末の向きが変わったことを検知する
@@ -76,6 +76,14 @@ class ViewController: UIViewController {
                        selector: #selector(type(of: self).detectCustomNotification),
                        name: .customNotification,
                        object: nil)
+
+        // 1回限りの通知（tokenをプロパティで保持する必要なし）
+        var token: NSObjectProtocol!
+        token = nc.addObserver(forName: .oneTimeOnlyNotification, object: nil, queue: nil) { (notification) in
+            // 2回目以降はボタンタップしてもprint出力されない
+            print("1回限りの通知: \(notification)")
+            self.nc.removeObserver(token)
+        }
     }
     
     //MARK:- 通知された時に呼ばれる処理
@@ -114,10 +122,16 @@ class ViewController: UIViewController {
         // 通知を送る際にObjectを渡す場合
 //        let postObject = "NotificationCenter-demo"
 //        nc.post(name: .customNotification, object: postObject)
+
+        // MARK: - oneTimeOnlyNotification
+        nc.post(name: .oneTimeOnlyNotification, object: nil)
     }
 }
 
 /// あらかじめ定義されている通知名と同じように使用するためにExtensionで自作の通知名を定義する
 extension NSNotification.Name {
     static let customNotification = NSNotification.Name("customNotification")
+
+    // Notification.NameでもOK -> typealiasでName = NSNotification.Name と定義されているため
+    static let oneTimeOnlyNotification = Notification.Name("oneTimeOnlyNotification")
 }
